@@ -28,12 +28,15 @@ export default function NotificationsBell() {
       } =
         await supabase.auth.getUser();
 
-      if (cancelled) return;
-
-      if (!user) {
+      if (
+        cancelled ||
+        !user
+      ) {
         setLoggedIn(false);
         return;
       }
+
+      const userId = user.id;
 
       setLoggedIn(true);
 
@@ -50,7 +53,7 @@ export default function NotificationsBell() {
             })
             .eq(
               "user_id",
-              user.id
+              userId
             )
             .eq(
               "is_read",
@@ -69,22 +72,23 @@ export default function NotificationsBell() {
 
       await loadUnread();
 
-      if (cancelled) return;
+      if (cancelled) {
+        return;
+      }
 
       channel =
         supabase
           .channel(
-            `global-notifications-${user.id}-${crypto.randomUUID()}`
+            `global-notifications-${userId}-${crypto.randomUUID()}`
           )
           .on(
             "postgres_changes",
             {
               event: "*",
               schema: "public",
-              table:
-                "notifications",
+              table: "notifications",
               filter:
-                `user_id=eq.${user.id}`,
+                `user_id=eq.${userId}`,
             },
             () => {
               void loadUnread();
