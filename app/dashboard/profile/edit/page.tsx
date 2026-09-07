@@ -763,6 +763,17 @@ export default function EditProfilePage() {
 
       </section>
 
-    </main>
+    
+      <div className="relative z-10 mx-auto mt-6 max-w-3xl px-6 pb-16">
+        <a
+          href="/account"
+          className="flex items-center justify-between rounded-2xl border border-red-500/15 bg-red-500/[0.04] px-5 py-4 text-sm font-semibold text-red-300 transition hover:bg-red-500/[0.08]"
+        >
+          <span>Account Settings</span>
+          <span>→</span>
+        </a>
+      </div>
+
+</main>
   );
 }
