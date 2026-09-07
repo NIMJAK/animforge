@@ -104,6 +104,7 @@ export default async function CreatorProfilePage({
       title,
       description,
       image_url,
+      storage_path,
       created_at
     `)
     .eq(
@@ -117,8 +118,17 @@ export default async function CreatorProfilePage({
       }
     );
 
+  type PortfolioItem = {
+    id: string;
+    title: string;
+    description: string | null;
+    image_url: string | null;
+    storage_path: string | null;
+    created_at: string;
+  };
+
   const portfolio =
-    portfolioData || [];
+    (portfolioData || []) as PortfolioItem[];
 
   const {
     data: projectData,
