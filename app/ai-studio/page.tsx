@@ -45,8 +45,7 @@ const HEADINGS = [
 export default function AIStudioPage() {
   const router = useRouter();
 
-  const engineRef =
-    useRef<any>(null);
+  const engineRef = useRef<any>(null);
 
   const [idea, setIdea] =
     useState("");
@@ -70,9 +69,7 @@ export default function AIStudioPage() {
     useState("");
 
   const [status, setStatus] =
-    useState(
-      "AI model not loaded"
-    );
+    useState("AI model not loaded");
 
   const [progress, setProgress] =
     useState(0);
@@ -89,11 +86,15 @@ export default function AIStudioPage() {
   const [copied, setCopied] =
     useState(false);
 
-  const [creatingProject, setCreatingProject] =
-    useState(false);
+  const [
+    creatingProject,
+    setCreatingProject,
+  ] = useState(false);
 
-  const [projectError, setProjectError] =
-    useState("");
+  const [
+    projectError,
+    setProjectError,
+  ] = useState("");
 
   async function loadAI() {
     if (engineRef.current) {
@@ -102,13 +103,13 @@ export default function AIStudioPage() {
 
     if (!window.isSecureContext) {
       throw new Error(
-        "AnimForge AI needs a secure browser connection. Use http://127.0.0.1:3000/ai-studio or the HTTPS live website."
+        "AnimForge AI needs a secure connection."
       );
     }
 
     if (!("gpu" in navigator)) {
       throw new Error(
-        "WebGPU is not available in this browser."
+        "WebGPU is unavailable in this browser."
       );
     }
 
@@ -124,7 +125,7 @@ export default function AIStudioPage() {
 
     if (!adapter) {
       throw new Error(
-        "WebGPU is enabled, but no GPU adapter could be created."
+        "No WebGPU adapter could be created."
       );
     }
 
@@ -137,14 +138,14 @@ export default function AIStudioPage() {
         "@mlc-ai/web-llm"
       );
 
-    const exists =
+    const modelExists =
       webllm.prebuiltAppConfig.model_list.some(
         (model: any) =>
           model.model_id ===
           MODEL_ID
       );
 
-    if (!exists) {
+    if (!modelExists) {
       throw new Error(
         `AI model unavailable: ${MODEL_ID}`
       );
@@ -182,8 +183,7 @@ export default function AIStudioPage() {
               );
             },
 
-          logLevel:
-            "INFO",
+          logLevel: "INFO",
         }
       );
 
@@ -231,11 +231,9 @@ export default function AIStudioPage() {
       const prompt = `
 You are AnimForge AI Studio.
 
-You are an animation pre-production co-creator.
+You help human animation creators turn rough ideas into practical production plans.
 
-Your job is to help human creators transform rough ideas into practical animation production plans.
-
-The human creator always remains in control.
+The creator always remains in control.
 
 Use EXACTLY these headings:
 
@@ -253,8 +251,6 @@ TEAM ROLES NEEDED
 
 PRODUCTION TASKS
 
-Rules:
-
 TITLE:
 Give one short working title.
 
@@ -268,35 +264,33 @@ Middle
 Ending
 
 CHARACTERS:
-For each important character give:
+For important characters include:
 Name
 Role
 Personality
 Motivation
 
 SCENES:
-Create a numbered scene list appropriate for the requested duration.
+Create a numbered scene list.
 
 TEAM ROLES NEEDED:
-Recommend the creators required for this animation.
+Each required role MUST be on its own line.
 
-Examples may include:
-Animator
-Writer
-Storyboard Artist
-Character Artist
-Background Artist
-Voice Actor
-Sound Designer
-Video Editor
+Example:
+- Animator
+- Storyboard Artist
+- Character Artist
+- Background Artist
+- Voice Actor
+- Sound Designer
+
+Only include roles genuinely useful for this project.
 
 PRODUCTION TASKS:
-Give 6 to 12 clear actionable production tasks.
+Give 6 to 12 practical production tasks.
+Each task MUST be on its own line.
 
-Each task must be on a separate line.
-
-Do not write long explanations.
-Keep everything practical.
+Keep everything concise and useful.
 
 CREATOR IDEA:
 ${idea.trim()}
@@ -316,7 +310,7 @@ ${audience}
 TONE:
 ${tone}
 
-Create the AnimForge production blueprint now.
+Create the AnimForge production blueprint.
 `;
 
       const stream =
@@ -331,7 +325,7 @@ Create the AnimForge production blueprint now.
 
             temperature: 0.7,
 
-            max_tokens: 650,
+            max_tokens: 700,
 
             stream: true,
           }
@@ -346,8 +340,7 @@ Create the AnimForge production blueprint now.
           chunk
             .choices?.[0]
             ?.delta
-            ?.content ||
-          "";
+            ?.content || "";
 
         fullText += token;
 
@@ -358,12 +351,12 @@ Create the AnimForge production blueprint now.
 
       if (!fullText.trim()) {
         throw new Error(
-          "The AI model returned an empty response."
+          "AI returned an empty response."
         );
       }
 
       setStatus(
-        "Blueprint ready"
+        "Blueprint ready — you can edit it"
       );
     } catch (err) {
       console.error(
@@ -414,6 +407,11 @@ Create the AnimForge production blueprint now.
         return;
       }
 
+      /*
+       * IMPORTANT:
+       * We parse the EDITED blueprint.
+       * So creator changes are respected.
+       */
       const parsed =
         parseBlueprint(
           result
@@ -430,7 +428,7 @@ Create the AnimForge production blueprint now.
 
       const {
         data: project,
-        error: projectInsertError,
+        error: projectError,
       } =
         await supabase
           .from("projects")
@@ -466,26 +464,29 @@ Create the AnimForge production blueprint now.
           .single();
 
       if (
-        projectInsertError ||
+        projectError ||
         !project
       ) {
         throw new Error(
-          projectInsertError?.message ||
+          projectError?.message ||
             "Could not create project."
         );
       }
 
+      /*
+       * CREATE AI TASKS
+       */
+
       const tasks =
-        parsed.tasks.length >
-        0
+        parsed.tasks.length
           ? parsed.tasks
           : [
-              "Review and refine the story outline",
-              "Finalize main character designs",
+              "Review story outline",
+              "Finalize character concepts",
               "Create storyboard",
-              "Prepare background concepts",
+              "Prepare backgrounds",
               "Assign production roles",
-              "Begin first animation pass",
+              "Begin animation production",
             ];
 
       const taskRows =
@@ -520,7 +521,7 @@ Create the AnimForge production blueprint now.
           );
 
       const {
-        error: taskError,
+        error: taskInsertError,
       } =
         await supabase
           .from("tasks")
@@ -528,25 +529,78 @@ Create the AnimForge production blueprint now.
             taskRows
           );
 
-      if (taskError) {
+      if (taskInsertError) {
         console.error(
-          "TASK CREATION ERROR:",
-          taskError
+          "AI TASK ERROR:",
+          taskInsertError
         );
-
-        setProjectError(
-          "The project was created, but some AI tasks could not be added."
-        );
-
-        router.push(
-          `/projects/${project.slug}`
-        );
-
-        return;
       }
 
+      /*
+       * CREATE TEAM OPENINGS
+       */
+
+      const roles =
+        parsed.roles.length
+          ? parsed.roles
+          : [];
+
+      if (roles.length) {
+        const openingRows =
+          roles
+            .slice(0, 10)
+            .map(
+              (role) => ({
+                project_id:
+                  project.id,
+
+                role_title:
+                  role,
+
+                description:
+                  `Join ${projectTitle} as ${role}. This role was suggested during AnimForge AI pre-production and can be edited by the project owner.`,
+
+                compensation_type:
+                  "negotiable",
+
+                location_type:
+                  "remote",
+
+                status:
+                  "open",
+              })
+            );
+
+        const {
+          error:
+            openingInsertError,
+        } =
+          await supabase
+            .from(
+              "project_openings"
+            )
+            .insert(
+              openingRows
+            );
+
+        if (
+          openingInsertError
+        ) {
+          console.error(
+            "AI OPENINGS ERROR:",
+            openingInsertError
+          );
+        }
+      }
+
+      /*
+       * Take creator to project page.
+       * They can see team/openings and
+       * enter the board from there.
+       */
+
       router.push(
-        `/projects/${project.slug}/board`
+        `/projects/${project.slug}`
       );
     } catch (err) {
       console.error(
@@ -576,9 +630,8 @@ Create the AnimForge production blueprint now.
     setCopied(true);
 
     setTimeout(
-      () => {
-        setCopied(false);
-      },
+      () =>
+        setCopied(false),
       1500
     );
   }
@@ -615,8 +668,6 @@ Create the AnimForge production blueprint now.
 
           <div className="absolute right-[-130px] top-[-150px] h-[450px] w-[450px] rounded-full bg-violet-500/20 blur-[140px]" />
 
-          <div className="absolute bottom-[-200px] left-[20%] h-[400px] w-[400px] rounded-full bg-fuchsia-500/10 blur-[140px]" />
-
           <div className="relative max-w-4xl">
 
             <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-4 py-2 text-sm text-violet-300">
@@ -635,17 +686,16 @@ Create the AnimForge production blueprint now.
               <br />
 
               <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-                Forge the production.
+                Build the team.
               </span>
 
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
 
-              Turn a rough animation idea into
-              a story foundation, characters,
-              scenes, team roles and a working
-              production board.
+              Turn your idea into a story,
+              production plan, project board
+              and creative team.
 
             </p>
 
@@ -656,15 +706,15 @@ Create the AnimForge production blueprint now.
               </FeatureBadge>
 
               <FeatureBadge>
-                No API key
+                Editable Blueprint
               </FeatureBadge>
 
               <FeatureBadge>
-                Free-first
+                AI Tasks
               </FeatureBadge>
 
               <FeatureBadge>
-                Human controlled
+                AI Team Roles
               </FeatureBadge>
 
             </div>
@@ -674,6 +724,8 @@ Create the AnimForge production blueprint now.
         </div>
 
         <div className="mt-10 grid gap-8 xl:grid-cols-[0.8fr_1.2fr]">
+
+          {/* IDEA SIDE */}
 
           <section className="rounded-[34px] border border-white/10 bg-white/[0.035] p-7 backdrop-blur-xl md:p-9">
 
@@ -701,7 +753,7 @@ Create the AnimForge production blueprint now.
                 )
               }
               rows={7}
-              placeholder="A boy living in a flooded future city discovers a tiny robot carrying a map to the last forest on Earth..."
+              placeholder="A boy discovers a robot carrying a map to the last forest on Earth..."
               className={`${inputStyle} mt-8 resize-none`}
             />
 
@@ -793,31 +845,20 @@ Create the AnimForge production blueprint now.
             </div>
 
             {error && (
-              <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-200">
+              <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
                 {error}
               </div>
             )}
 
             <div className="mt-8 border-t border-white/[0.07] pt-6">
 
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-sm text-zinc-500">
 
-                <div className="flex items-center gap-2 text-sm text-zinc-500">
+                <Cpu
+                  size={15}
+                />
 
-                  <Cpu
-                    size={15}
-                  />
-
-                  {status}
-
-                </div>
-
-                {progress > 0 &&
-                  !modelLoaded && (
-                    <span className="text-xs text-violet-400">
-                      {progress}%
-                    </span>
-                  )}
+                {status}
 
               </div>
 
@@ -840,7 +881,7 @@ Create the AnimForge production blueprint now.
                 type="button"
                 onClick={generate}
                 disabled={generating}
-                className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 font-semibold text-black transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 font-semibold text-black disabled:opacity-40"
               >
 
                 {generating ? (
@@ -862,17 +903,11 @@ Create the AnimForge production blueprint now.
 
               </button>
 
-              {!modelLoaded && (
-                <p className="mt-4 text-center text-xs leading-5 text-zinc-700">
-                  First use loads the local AI
-                  model. Later generations use
-                  the browser cache.
-                </p>
-              )}
-
             </div>
 
           </section>
+
+          {/* BLUEPRINT SIDE */}
 
           <section className="rounded-[34px] border border-white/10 bg-white/[0.035] p-7 backdrop-blur-xl md:p-9">
 
@@ -896,7 +931,7 @@ Create the AnimForge production blueprint now.
                   onClick={
                     copyResult
                   }
-                  className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-zinc-400 transition hover:text-white"
+                  className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-400"
                 >
 
                   {copied ? (
@@ -920,9 +955,29 @@ Create the AnimForge production blueprint now.
 
             {result ? (
               <>
-                <div className="mt-8 max-h-[760px] overflow-y-auto whitespace-pre-wrap rounded-[26px] border border-white/[0.07] bg-black/20 p-6 leading-8 text-zinc-300 md:p-8">
-                  {result}
+
+                <div className="mt-6 rounded-2xl border border-violet-500/20 bg-violet-500/[0.06] p-4">
+
+                  <p className="text-sm font-medium text-violet-300">
+                    ✦ You can edit everything below before creating the project.
+                  </p>
+
+                  <p className="mt-1 text-xs text-zinc-600">
+                    AnimForge will use your edited version when creating tasks and team openings.
+                  </p>
+
                 </div>
+
+                <textarea
+                  value={result}
+                  onChange={(e) =>
+                    setResult(
+                      e.target.value
+                    )
+                  }
+                  rows={28}
+                  className="mt-6 w-full resize-y rounded-[26px] border border-white/[0.07] bg-black/20 p-6 leading-8 text-zinc-300 outline-none transition focus:border-violet-500/30 md:p-8"
+                />
 
                 {projectError && (
                   <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
@@ -932,15 +987,14 @@ Create the AnimForge production blueprint now.
 
                 <div className="mt-6 rounded-[26px] border border-violet-500/20 bg-violet-500/[0.07] p-6">
 
-                  <p className="text-sm font-semibold text-violet-300">
-                    Ready to turn this into a real project?
+                  <p className="font-semibold text-violet-300">
+                    Create the full production workspace
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-zinc-500">
-                    AnimForge will create the project
-                    and turn the AI production tasks
-                    into backlog tasks on your project
-                    board.
+                    AnimForge will create your project,
+                    production backlog and open team roles
+                    from this blueprint.
                   </p>
 
                   <button
@@ -951,7 +1005,7 @@ Create the AnimForge production blueprint now.
                     disabled={
                       creatingProject
                     }
-                    className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-violet-500 px-6 py-4 font-semibold text-white transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-violet-500 px-6 py-4 font-semibold text-white transition hover:bg-violet-400 disabled:opacity-40"
                   >
 
                     {creatingProject ? (
@@ -966,17 +1020,18 @@ Create the AnimForge production blueprint now.
                     )}
 
                     {creatingProject
-                      ? "Creating Project..."
+                      ? "Creating Workspace..."
                       : "Create AnimForge Project"}
 
                   </button>
 
                 </div>
+
               </>
             ) : (
-              <div className="mt-8 flex min-h-[560px] items-center justify-center rounded-[26px] border border-dashed border-white/10 bg-black/10 p-10">
+              <div className="mt-8 flex min-h-[560px] items-center justify-center rounded-[26px] border border-dashed border-white/10 bg-black/10">
 
-                <div className="max-w-md text-center">
+                <div className="max-w-md p-10 text-center">
 
                   <BrainCircuit
                     size={40}
@@ -988,22 +1043,16 @@ Create the AnimForge production blueprint now.
                   </h3>
 
                   <p className="mt-4 leading-7 text-zinc-600">
-                    Give AnimForge AI your rough
-                    concept. Your generated story
-                    and production blueprint will
-                    appear here.
+                    Generate your blueprint,
+                    edit anything you want,
+                    then turn it into a real
+                    AnimForge production.
                   </p>
 
                 </div>
 
               </div>
             )}
-
-            <p className="mt-6 text-xs leading-6 text-zinc-700">
-              AI output is a starting point.
-              Human creators remain responsible
-              for all final creative decisions.
-            </p>
 
           </section>
 
@@ -1080,8 +1129,7 @@ function parseBlueprint(
     text.toUpperCase();
 
   const sections:
-    Record<string, string> =
-    {};
+    Record<string, string> = {};
 
   HEADINGS.forEach(
     (heading, index) => {
@@ -1108,17 +1156,15 @@ function parseBlueprint(
         HEADINGS.length;
         i++
       ) {
-        const nextIndex =
+        const next =
           upper.indexOf(
             HEADINGS[i],
             contentStart
           );
 
-        if (
-          nextIndex !== -1
-        ) {
+        if (next !== -1) {
           contentEnd =
-            nextIndex;
+            next;
 
           break;
         }
@@ -1131,7 +1177,7 @@ function parseBlueprint(
             contentEnd
           )
           .replace(
-            /^[:\s-]+/,
+            /^[:\s#*-]+/,
             ""
           )
           .trim();
@@ -1147,13 +1193,52 @@ function parseBlueprint(
       )
       .trim() || "";
 
-  const taskSection =
-    sections[
-      "PRODUCTION TASKS"
-    ] || "";
-
   const tasks =
-    taskSection
+    parseList(
+      sections[
+        "PRODUCTION TASKS"
+      ] || ""
+    );
+
+  const roles =
+    parseRoles(
+      sections[
+        "TEAM ROLES NEEDED"
+      ] || ""
+    );
+
+  return {
+    title,
+    tasks,
+    roles,
+  };
+}
+
+function parseList(
+  text: string
+) {
+  return text
+    .split("\n")
+    .map((line) =>
+      line
+        .replace(
+          /^\s*(?:[-*•]|\d+[\.\)])\s*/,
+          ""
+        )
+        .trim()
+    )
+    .filter(
+      (line) =>
+        line.length >= 4 &&
+        line.length <= 220
+    );
+}
+
+function parseRoles(
+  text: string
+) {
+  const roles =
+    text
       .split("\n")
       .map((line) =>
         line
@@ -1163,16 +1248,37 @@ function parseBlueprint(
           )
           .trim()
       )
+      .map((line) => {
+        /*
+         * AI may output:
+         * Animator - Creates animation
+         * or
+         * Animator: Creates animation
+         *
+         * We only need the role title.
+         */
+
+        const beforeDash =
+          line.split(
+            /\s[-–—]\s/
+          )[0];
+
+        const beforeColon =
+          beforeDash.split(
+            ":"
+          )[0];
+
+        return beforeColon.trim();
+      })
       .filter(
-        (line) =>
-          line.length >= 4 &&
-          line.length <= 220
+        (role) =>
+          role.length >= 3 &&
+          role.length <= 80
       );
 
-  return {
-    title,
-    tasks,
-  };
+  return Array.from(
+    new Set(roles)
+  );
 }
 
 function createSlug(
