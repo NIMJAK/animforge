@@ -5,6 +5,7 @@ import {
   Clapperboard,
   LayoutDashboard,
   MessageCircle,
+  Pencil,
   Sparkles,
   Users,
   UserRound,
@@ -376,6 +377,15 @@ export default async function ProjectPage({
 
               {isOwner && (
                 <>
+                  <a
+                    href={`/projects/${project.slug}/edit`}
+                    className="flex items-center gap-2 rounded-2xl border border-violet-500/25 bg-violet-500/10 px-5 py-3 text-sm font-medium text-violet-300 transition hover:bg-violet-500/20"
+                  >
+                    <Pencil size={16} />
+
+                    Edit Project
+                  </a>
+
                   <a
                     href={`/projects/${project.slug}/applications`}
                     className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.08]"
