@@ -395,6 +395,17 @@ export default async function ProjectPage({
 
                     Project Assets
                   </a>
+
+                  <a
+                    href={`/projects/${project.slug}/episodes`}
+                    className="flex items-center gap-2 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-3 text-sm font-medium text-amber-300 transition hover:bg-amber-500/20"
+                  >
+                    <Clapperboard
+                      size={16}
+                    />
+
+                    Episodes & Scenes
+                  </a>
                 </>
               )}
 
