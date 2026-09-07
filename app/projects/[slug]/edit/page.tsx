@@ -1,5 +1,7 @@
 "use client";
 
+import DeleteProjectLink from "@/components/animforge/delete-project-link";
+
 import {
   ArrowLeft,
   Loader2,
@@ -560,7 +562,36 @@ export default function EditProjectPage() {
 
       </section>
 
-    </main>
+    
+      <div className="relative z-10 mx-auto mt-8 max-w-4xl px-6 pb-16">
+        <div className="rounded-[28px] border border-red-500/20 bg-red-500/[0.04] p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-400">
+            Danger Zone
+          </p>
+
+          <h2 className="mt-2 text-xl font-bold">
+            Delete this project
+          </h2>
+
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
+            Permanently remove this project and its production data.
+          </p>
+
+          <a
+            href="./delete"
+            className="mt-5 inline-flex rounded-xl border border-red-500/20 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-300 transition hover:bg-red-500/20"
+          >
+            Delete Project
+          </a>
+        </div>
+      </div>
+
+
+      <div className="relative z-20 mx-auto w-full max-w-4xl px-6 pb-16">
+        <DeleteProjectLink />
+      </div>
+
+</main>
   );
 }
 
