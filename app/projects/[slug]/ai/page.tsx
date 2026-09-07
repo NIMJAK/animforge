@@ -9,6 +9,7 @@ import {
   Cpu,
   Gauge,
   Loader2,
+  Save,
   Sparkles,
   UserRound,
   WandSparkles,
@@ -118,7 +119,6 @@ export default function ProjectAIPage() {
     setInstruction,
   ] = useState("");
 
-  // CHARACTER CONTROLS
   const [
     characterName,
     setCharacterName,
@@ -185,6 +185,21 @@ export default function ProjectAIPage() {
 
   const [copied, setCopied] =
     useState(false);
+
+  const [
+    savingAsset,
+    setSavingAsset,
+  ] = useState(false);
+
+  const [
+    saveMessage,
+    setSaveMessage,
+  ] = useState("");
+
+  const [
+    saveError,
+    setSaveError,
+  ] = useState("");
 
   useEffect(() => {
     async function loadProject() {
@@ -326,10 +341,6 @@ export default function ProjectAIPage() {
       );
     }
 
-    /*
-     * Remove previous model
-     * when switching modes.
-     */
     if (
       engineRef.current &&
       loadedModelRef.current !==
@@ -338,7 +349,7 @@ export default function ProjectAIPage() {
       try {
         await engineRef.current.unload();
       } catch {
-        // Safe to continue.
+        // Continue safely.
       }
 
       engineRef.current =
@@ -415,10 +426,6 @@ export default function ProjectAIPage() {
       return "";
     }
 
-    /*
-     * Keep context reasonable
-     * for smaller local models.
-     */
     const blueprint =
       (
         project.description ||
@@ -455,22 +462,22 @@ ${blueprint}
         "Continue the story naturally from the existing material.",
 
       scene:
-        "Write or develop a specific animation scene. Include setting, action, character behavior and useful dialogue.",
+        "Write or improve a specific scene with setting, action, character behavior and dialogue.",
 
       dialogue:
-        "Improve the dialogue. Make each character sound distinct, natural and appropriate for the story.",
+        "Improve dialogue and make every character sound distinct and natural.",
 
       pacing:
-        "Analyze and improve the pacing. Identify slow, rushed or repetitive moments and propose stronger story beats.",
+        "Analyze and improve story pacing. Strengthen slow, rushed or repetitive moments.",
 
       conflict:
-        "Strengthen the dramatic conflict, obstacles, stakes and character choices without making them feel forced.",
+        "Strengthen conflict, obstacles, stakes and meaningful character choices.",
 
       ending:
-        "Develop a satisfying ending that follows naturally from the characters and story themes.",
+        "Develop a satisfying ending that follows naturally from the story and characters.",
 
       rewrite:
-        "Rewrite the requested story material while preserving the project's important characters, facts and tone.",
+        "Rewrite the requested material while preserving continuity and important established facts.",
     };
 
     return instructions[
@@ -482,12 +489,11 @@ ${blueprint}
     return `
 You are AnimForge Story Studio.
 
-You are an expert animation story-development assistant working WITH human creators.
+You are an expert animation story-development assistant working with human creators.
 
 Avoid generic filler.
-Avoid clichés when possible.
+Avoid predictable clichés.
 Preserve established continuity.
-Do not randomly introduce important facts that contradict the existing project.
 
 PROJECT CONTEXT:
 
@@ -499,13 +505,13 @@ ${storyMode.toUpperCase()}
 TASK:
 ${getStoryInstruction()}
 
-CREATOR'S SPECIFIC REQUEST:
+CREATOR REQUEST:
 ${
   instruction.trim() ||
   "Develop this part of the project creatively."
 }
 
-OUTPUT FORMAT:
+OUTPUT:
 
 CREATIVE DIRECTION
 
@@ -525,15 +531,9 @@ WHAT COULD BE STRONGER
 
 NEXT CREATIVE OPTIONS
 
-Make suggestions specific to THIS project.
+Make the answer specific to this project.
 
-For scenes:
-show what characters want,
-what creates tension,
-what changes by the end of the scene,
-and why the scene matters.
-
-The result is an editable creative draft, not a final decision.
+The result is an editable creative draft.
 `;
   }
 
@@ -541,11 +541,10 @@ The result is an editable creative draft, not a final decision.
     return `
 You are AnimForge Character Studio.
 
-You help professional animation creators build memorable, internally consistent original characters.
+Help animation creators develop memorable, internally consistent original characters.
 
-Avoid generic character descriptions.
-Avoid perfect characters.
-Give the character contradictions, strengths, weaknesses and specific behavior.
+Avoid generic characters.
+Give them strengths, weaknesses and contradictions.
 
 PROJECT CONTEXT:
 
@@ -562,13 +561,13 @@ ${characterRole || "Determine from project"}
 AGE / PROFILE:
 ${characterAge || "Determine appropriately"}
 
-PERSONALITY DIRECTION:
+PERSONALITY:
 ${personality || "Develop an interesting personality"}
 
 MAIN GOAL:
-${characterGoal || "Develop from story context"}
+${characterGoal || "Develop from story"}
 
-FLAW / WEAKNESS:
+FLAW:
 ${characterFlaw || "Create a meaningful flaw"}
 
 VISUAL DIRECTION:
@@ -577,10 +576,10 @@ ${visualDirection || "Develop from animation style"}
 RELATIONSHIP:
 ${relationship || "Determine important relationships"}
 
-EXTRA CREATOR REQUEST:
+EXTRA REQUEST:
 ${instruction || "None"}
 
-OUTPUT FORMAT:
+OUTPUT:
 
 CHARACTER NAME
 
@@ -623,8 +622,6 @@ KEY STORY MOMENTS
 ANIMATION NOTES
 
 3 DETAILS THAT MAKE THEM MEMORABLE
-
-Make every section relevant to THIS specific animation project.
 `;
   }
 
@@ -640,8 +637,9 @@ Make every section relevant to THIS specific animation project.
     }
 
     setGenerating(true);
-
     setError("");
+    setSaveError("");
+    setSaveMessage("");
     setResult("");
 
     try {
@@ -657,8 +655,7 @@ Make every section relevant to THIS specific animation project.
           {
             messages: [
               {
-                role:
-                  "user",
+                role: "user",
                 content:
                   prompt,
               },
@@ -680,8 +677,7 @@ Make every section relevant to THIS specific animation project.
           }
         );
 
-      let fullText =
-        "";
+      let fullText = "";
 
       for await (
         const chunk of stream
@@ -693,17 +689,14 @@ Make every section relevant to THIS specific animation project.
             ?.content ||
           "";
 
-        fullText +=
-          token;
+        fullText += token;
 
         setResult(
           fullText
         );
       }
 
-      if (
-        !fullText.trim()
-      ) {
+      if (!fullText.trim()) {
         throw new Error(
           "AI returned an empty response."
         );
@@ -748,7 +741,6 @@ Make every section relevant to THIS specific animation project.
     refinement:
       | "expand"
       | "emotional"
-      | "dark"
       | "less_cliche"
       | "shorten"
       | "alternatives"
@@ -759,22 +751,19 @@ Make every section relevant to THIS specific animation project.
 
     const instructions = {
       expand:
-        "Expand this draft with more useful creative detail. Preserve its strongest ideas.",
+        "Expand this draft with more useful creative detail while preserving the strongest ideas.",
 
       emotional:
-        "Make this more emotionally powerful and character-driven without becoming melodramatic.",
-
-      dark:
-        "Create a darker and more intense version while staying appropriate for the project's audience.",
+        "Make this more emotional and character-driven without becoming melodramatic.",
 
       less_cliche:
-        "Remove predictable or cliché ideas. Replace them with more specific, fresh and believable creative choices.",
+        "Remove predictable ideas and replace them with fresher, more specific creative choices.",
 
       shorten:
-        "Make this substantially more concise while preserving the strongest ideas.",
+        "Make this significantly more concise while keeping the strongest ideas.",
 
       alternatives:
-        "Create THREE clearly different alternative versions of the strongest core idea. Label VERSION 1, VERSION 2 and VERSION 3.",
+        "Create THREE clearly different alternative versions. Label VERSION 1, VERSION 2 and VERSION 3.",
     };
 
     const prompt = `
@@ -788,18 +777,171 @@ CURRENT DRAFT:
 
 ${result.slice(0, 9000)}
 
-REFINEMENT REQUEST:
+REFINEMENT:
 
 ${instructions[refinement]}
 
-Do not explain what you are doing.
-Return the improved creative material directly.
+Return only the improved creative material.
 `;
 
     await runPrompt(
       prompt,
       "Refinement ready"
     );
+  }
+
+  async function saveAsset() {
+    if (
+      !project ||
+      !result.trim() ||
+      savingAsset
+    ) {
+      return;
+    }
+
+    setSavingAsset(true);
+    setSaveError("");
+    setSaveMessage("");
+
+    try {
+      const supabase =
+        createClient();
+
+      const {
+        data: { user },
+        error:
+          userError,
+      } =
+        await supabase.auth.getUser();
+
+      if (
+        userError ||
+        !user
+      ) {
+        router.push(
+          "/auth/login"
+        );
+
+        return;
+      }
+
+      if (
+        toolMode ===
+        "story"
+      ) {
+        const {
+          error:
+            insertError,
+        } =
+          await supabase
+            .from(
+              "project_story_drafts"
+            )
+            .insert({
+              project_id:
+                project.id,
+
+              created_by:
+                user.id,
+
+              title:
+                createStoryTitle(
+                  storyMode
+                ),
+
+              draft_type:
+                storyMode,
+
+              content:
+                result.trim(),
+            });
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        setSaveMessage(
+          "Story draft saved to this project ✓"
+        );
+      } else {
+        const name =
+          characterName.trim() ||
+          extractCharacterName(
+            result
+          ) ||
+          "Untitled Character";
+
+        const {
+          error:
+            insertError,
+        } =
+          await supabase
+            .from(
+              "project_characters"
+            )
+            .insert({
+              project_id:
+                project.id,
+
+              created_by:
+                user.id,
+
+              name,
+
+              role:
+                characterRole.trim() ||
+                null,
+
+              age_profile:
+                characterAge.trim() ||
+                null,
+
+              personality:
+                personality.trim() ||
+                null,
+
+              goal:
+                characterGoal.trim() ||
+                null,
+
+              flaw:
+                characterFlaw.trim() ||
+                null,
+
+              visual_direction:
+                visualDirection.trim() ||
+                null,
+
+              relationship:
+                relationship.trim() ||
+                null,
+
+              raw_content:
+                result.trim(),
+            });
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        setSaveMessage(
+          `${name} saved to this project ✓`
+        );
+      }
+    } catch (err) {
+      console.error(
+        "SAVE AI ASSET ERROR:",
+        err
+      );
+
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : "Could not save this asset."
+      );
+    } finally {
+      setSavingAsset(false);
+    }
   }
 
   async function copyResult() {
@@ -823,10 +965,12 @@ Return the improved creative material directly.
   if (loadingProject) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#060608] text-white">
+
         <Loader2
           size={30}
           className="animate-spin text-violet-400"
         />
+
       </main>
     );
   }
@@ -844,7 +988,7 @@ Return the improved creative material directly.
 
           <a
             href={`/projects/${slug}`}
-            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/[0.05] hover:text-white"
+            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:text-white"
           >
             <ArrowLeft
               size={16}
@@ -877,21 +1021,19 @@ Return the improved creative material directly.
 
                 </div>
 
-                <h1 className="mt-6 text-4xl font-black tracking-[-0.04em] md:text-6xl">
+                <h1 className="mt-6 text-4xl font-black md:text-6xl">
                   {project.title}
                 </h1>
 
                 <p className="mt-4 max-w-2xl text-lg leading-8 text-zinc-400">
-                  Develop stronger stories and
-                  memorable characters using your
-                  existing project as creative context.
+                  Develop and permanently save stories and characters inside your production.
                 </p>
 
               </div>
 
             </div>
 
-            {/* AI QUALITY */}
+            {/* AI MODE */}
 
             <section className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
 
@@ -905,13 +1047,15 @@ Return the improved creative material directly.
                   />
 
                   <div>
+
                     <p className="font-semibold">
                       AI Quality
                     </p>
 
                     <p className="text-xs text-zinc-600">
-                      Choose speed or stronger creative output.
+                      Fast for speed. Quality for stronger output.
                     </p>
+
                   </div>
 
                 </div>
@@ -933,7 +1077,7 @@ Return the improved creative material directly.
                           FAST_MODEL
                       );
                     }}
-                    className={`rounded-xl px-5 py-3 text-sm font-semibold transition ${
+                    className={`rounded-xl px-5 py-3 text-sm font-semibold ${
                       aiMode ===
                       "fast"
                         ? "bg-white text-black"
@@ -958,7 +1102,7 @@ Return the improved creative material directly.
                           QUALITY_MODEL
                       );
                     }}
-                    className={`rounded-xl px-5 py-3 text-sm font-semibold transition ${
+                    className={`rounded-xl px-5 py-3 text-sm font-semibold ${
                       aiMode ===
                       "quality"
                         ? "bg-violet-500 text-white"
@@ -972,19 +1116,9 @@ Return the improved creative material directly.
 
               </div>
 
-              {aiMode ===
-                "quality" && (
-                <p className="mt-4 text-xs leading-5 text-amber-300/70">
-                  Quality Mode uses a much larger model.
-                  First load is larger and generation will
-                  be slower. If your device struggles,
-                  switch back to Fast.
-                </p>
-              )}
-
             </section>
 
-            {/* TOOL SELECT */}
+            {/* TOOLS */}
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
 
@@ -1007,6 +1141,8 @@ Return the improved creative material directly.
 
                   setResult("");
                   setError("");
+                  setSaveError("");
+                  setSaveMessage("");
                 }}
               />
 
@@ -1021,7 +1157,7 @@ Return the improved creative material directly.
                   />
                 }
                 title="Character Studio"
-                description="Build personality, design, relationships and arcs."
+                description="Personality, design, relationships and character arcs."
                 onClick={() => {
                   setToolMode(
                     "character"
@@ -1029,6 +1165,8 @@ Return the improved creative material directly.
 
                   setResult("");
                   setError("");
+                  setSaveError("");
+                  setSaveMessage("");
                 }}
               />
 
@@ -1116,7 +1254,7 @@ Return the improved creative material directly.
                 )}
 
                 {error && (
-                  <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-200">
+                  <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
                     {error}
                   </div>
                 )}
@@ -1133,13 +1271,12 @@ Return the improved creative material directly.
 
                   </div>
 
-                  {progress >
-                    0 &&
+                  {progress > 0 &&
                     !modelLoaded && (
                       <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
 
                         <div
-                          className="h-full rounded-full bg-violet-500 transition-all"
+                          className="h-full rounded-full bg-violet-500"
                           style={{
                             width:
                               `${progress}%`,
@@ -1157,7 +1294,7 @@ Return the improved creative material directly.
                     disabled={
                       generating
                     }
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 font-bold text-black transition hover:scale-[1.01] disabled:opacity-40"
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 font-bold text-black disabled:opacity-40"
                   >
 
                     {generating ? (
@@ -1184,13 +1321,14 @@ Return the improved creative material directly.
 
               </section>
 
-              {/* OUTPUT */}
+              {/* RESULT */}
 
               <section className="rounded-[32px] border border-white/10 bg-white/[0.035] p-7 md:p-9">
 
                 <div className="flex flex-wrap items-start justify-between gap-4">
 
                   <div>
+
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-400">
                       Creative Draft
                     </p>
@@ -1201,6 +1339,7 @@ Return the improved creative material directly.
                         ? "Story Development"
                         : "Character Design"}
                     </h2>
+
                   </div>
 
                   {result && (
@@ -1211,6 +1350,7 @@ Return the improved creative material directly.
                       }
                       className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-400"
                     >
+
                       {copied ? (
                         <Check
                           size={15}
@@ -1224,6 +1364,7 @@ Return the improved creative material directly.
                       {copied
                         ? "Copied"
                         : "Copy"}
+
                     </button>
                   )}
 
@@ -1231,12 +1372,11 @@ Return the improved creative material directly.
 
                 {result ? (
                   <>
-                    {/* REFINE */}
 
                     <div className="mt-6">
 
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-600">
-                        Refine this draft
+                        Refine
                       </p>
 
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -1261,18 +1401,6 @@ Return the improved creative material directly.
                           onClick={() =>
                             refine(
                               "emotional"
-                            )
-                          }
-                        />
-
-                        <RefineButton
-                          text="Darker"
-                          disabled={
-                            generating
-                          }
-                          onClick={() =>
-                            refine(
-                              "dark"
                             )
                           }
                         />
@@ -1318,41 +1446,81 @@ Return the improved creative material directly.
                     </div>
 
                     <div className="mt-5 rounded-xl border border-violet-500/20 bg-violet-500/[0.06] p-4 text-sm text-violet-300">
-                      ✦ This draft is editable. Change anything you want.
+                      ✦ Edit the draft below before saving.
                     </div>
 
                     <textarea
                       value={
                         result
                       }
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setResult(
                           e.target.value
-                        )
-                      }
-                      rows={30}
-                      className="mt-5 w-full resize-y rounded-[24px] border border-white/10 bg-black/25 p-6 leading-8 text-zinc-200 outline-none transition focus:border-violet-500/30"
+                        );
+
+                        setSaveMessage("");
+                      }}
+                      rows={28}
+                      className="mt-5 w-full resize-y rounded-[24px] border border-white/10 bg-black/25 p-6 leading-8 text-zinc-200 outline-none focus:border-violet-500/30"
                     />
+
+                    {saveError && (
+                      <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
+                        {saveError}
+                      </div>
+                    )}
+
+                    {saveMessage && (
+                      <div className="mt-5 rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-sm font-medium text-green-300">
+                        {saveMessage}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        saveAsset
+                      }
+                      disabled={
+                        savingAsset ||
+                        generating
+                      }
+                      className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-6 py-4 font-bold text-white transition hover:bg-violet-400 disabled:opacity-40"
+                    >
+
+                      {savingAsset ? (
+                        <Loader2
+                          size={18}
+                          className="animate-spin"
+                        />
+                      ) : (
+                        <Save
+                          size={18}
+                        />
+                      )}
+
+                      {savingAsset
+                        ? "Saving..."
+                        : toolMode ===
+                          "story"
+                        ? "Save Story Draft"
+                        : "Save Character"}
+
+                    </button>
 
                   </>
                 ) : (
-                  <div className="mt-8 flex min-h-[620px] items-center justify-center rounded-[26px] border border-dashed border-white/10 bg-black/10 p-10">
+                  <div className="mt-8 flex min-h-[620px] items-center justify-center rounded-[26px] border border-dashed border-white/10 bg-black/10 p-10 text-center">
 
-                    <div className="max-w-md text-center">
+                    <div>
 
                       <BrainCircuit
                         size={40}
                         className="mx-auto text-violet-500"
                       />
 
-                      <h3 className="mt-5 text-xl font-bold">
-                        Build something specific.
-                      </h3>
-
-                      <p className="mt-3 leading-7 text-zinc-600">
-                        AnimForge uses your existing
-                        project as context instead of
-                        generating disconnected ideas.
+                      <p className="mt-5 text-zinc-600">
+                        Your AI draft will appear here.
                       </p>
 
                     </div>
@@ -1378,22 +1546,18 @@ function StoryControls({
   instruction,
   setInstruction,
 }: {
-  storyMode:
-    StoryMode;
+  storyMode: StoryMode;
 
   setStoryMode:
     (
-      value:
-        StoryMode
+      value: StoryMode
     ) => void;
 
-  instruction:
-    string;
+  instruction: string;
 
   setInstruction:
     (
-      value:
-        string
+      value: string
     ) => void;
 }) {
   return (
@@ -1403,7 +1567,7 @@ function StoryControls({
       </p>
 
       <h2 className="mt-2 text-2xl font-black">
-        What do you want to improve?
+        What should we develop?
       </h2>
 
       <label className="mb-2 mt-6 block text-sm text-zinc-400">
@@ -1467,7 +1631,7 @@ function StoryControls({
           )
         }
         rows={9}
-        placeholder="Example: Scene 4 feels too easy. Make the protagonist fail first, increase tension and add stronger dialogue."
+        placeholder="Example: Rewrite Scene 3 with stronger tension and better dialogue."
         className={`${inputStyle} resize-none`}
       />
     </>
@@ -1565,7 +1729,7 @@ function CharacterControls(
         setValue={
           props.setVisualDirection
         }
-        placeholder="Tall silhouette, oversized coat, mechanical arm..."
+        placeholder="Oversized coat, mechanical arm..."
         className="mt-4"
       />
 
@@ -1577,7 +1741,7 @@ function CharacterControls(
         setValue={
           props.setRelationship
         }
-        placeholder="Rival of protagonist, protective older sister..."
+        placeholder="Rival of protagonist..."
         className="mt-4"
       />
 
@@ -1595,7 +1759,7 @@ function CharacterControls(
           )
         }
         rows={5}
-        placeholder="Any additional details you want AI to follow..."
+        placeholder="Anything else the AI should follow..."
         className={`${inputStyle} resize-none`}
       />
     </>
@@ -1610,15 +1774,17 @@ function MiniInput({
   className = "",
 }: {
   label: string;
+
   value: string;
+
   setValue:
     (
       value: string
     ) => void;
-  placeholder:
-    string;
-  className?:
-    string;
+
+  placeholder: string;
+
+  className?: string;
 }) {
   return (
     <div
@@ -1656,11 +1822,15 @@ function ToolButton({
   onClick,
 }: {
   active: boolean;
+
   icon:
     React.ReactNode;
+
   title: string;
+
   description:
     string;
+
   onClick:
     () => void;
 }) {
@@ -1673,9 +1843,10 @@ function ToolButton({
       className={`rounded-[26px] border p-6 text-left transition ${
         active
           ? "border-violet-500/30 bg-violet-500/10"
-          : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
+          : "border-white/10 bg-white/[0.03]"
       }`}
     >
+
       <div
         className={
           active
@@ -1693,6 +1864,7 @@ function ToolButton({
       <p className="mt-2 text-sm leading-6 text-zinc-500">
         {description}
       </p>
+
     </button>
   );
 }
@@ -1703,8 +1875,10 @@ function RefineButton({
   onClick,
 }: {
   text: string;
+
   disabled:
     boolean;
+
   onClick:
     () => void;
 }) {
@@ -1717,7 +1891,7 @@ function RefineButton({
       onClick={
         onClick
       }
-      className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-zinc-400 transition hover:border-violet-500/30 hover:text-violet-300 disabled:opacity-40"
+      className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-zinc-400 transition hover:text-violet-300 disabled:opacity-40"
     >
       <Sparkles
         size={12}
@@ -1727,4 +1901,98 @@ function RefineButton({
       {text}
     </button>
   );
+}
+
+function createStoryTitle(
+  mode: StoryMode
+) {
+  const names: Record<
+    StoryMode,
+    string
+  > = {
+    continue:
+      "Story Continuation",
+
+    scene:
+      "Scene Draft",
+
+    dialogue:
+      "Dialogue Draft",
+
+    pacing:
+      "Pacing Revision",
+
+    conflict:
+      "Conflict Development",
+
+    ending:
+      "Ending Draft",
+
+    rewrite:
+      "Story Rewrite",
+  };
+
+  const date =
+    new Date()
+      .toLocaleDateString();
+
+  return `${names[mode]} — ${date}`;
+}
+
+function extractCharacterName(
+  text: string
+) {
+  const lines =
+    text
+      .split("\n")
+      .map(
+        (line) =>
+          line.trim()
+      )
+      .filter(Boolean);
+
+  for (
+    let i = 0;
+    i < lines.length;
+    i++
+  ) {
+    if (
+      lines[i]
+        .toUpperCase()
+        .includes(
+          "CHARACTER NAME"
+        )
+    ) {
+      const sameLine =
+        lines[i]
+          .replace(
+            /character name/gi,
+            ""
+          )
+          .replace(
+            /^[:\s#*-]+/,
+            ""
+          )
+          .trim();
+
+      if (sameLine) {
+        return sameLine;
+      }
+
+      if (
+        lines[i + 1]
+      ) {
+        return lines[
+          i + 1
+        ]
+          .replace(
+            /^[:\s#*-]+/,
+            ""
+          )
+          .trim();
+      }
+    }
+  }
+
+  return "";
 }

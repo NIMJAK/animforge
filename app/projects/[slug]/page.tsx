@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BriefcaseBusiness,
+  FolderOpen,
   Clapperboard,
   LayoutDashboard,
   MessageCircle,
@@ -382,6 +383,17 @@ export default async function ProjectPage({
                     />
 
                     AI Workspace
+                  </a>
+
+                  <a
+                    href={`/projects/${project.slug}/assets`}
+                    className="flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-5 py-3 text-sm font-medium text-blue-300 transition hover:bg-blue-500/20"
+                  >
+                    <FolderOpen
+                      size={16}
+                    />
+
+                    Project Assets
                   </a>
                 </>
               )}
