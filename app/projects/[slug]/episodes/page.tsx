@@ -26,6 +26,8 @@ import {
 
 import { createClient } from "@/lib/supabase/client";
 
+import SceneProductionPanel from "@/components/animforge/scene-production-panel";
+
 import {
   AnimForgeLogo,
   PageBackground,
@@ -1458,6 +1460,16 @@ export default function EpisodesPage() {
 Character enters..."
             className={`${inputStyle} resize-y font-mono text-sm leading-7`}
           />
+
+          {project && (
+            <SceneProductionPanel
+              projectId={project.id}
+              sceneId={editingScene.id}
+              sceneNumber={editingScene.scene_number}
+              sceneTitle={editingScene.title}
+              userId={userId}
+            />
+          )}
 
           <FieldLabel>
             Production Status
