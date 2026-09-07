@@ -1,3 +1,4 @@
+import DeletePortfolioButton from "@/components/animforge/delete-portfolio-button";
 import {
   ArrowLeft,
   ArrowRight,
@@ -463,6 +464,14 @@ export default async function CreatorProfilePage({
                                 item.description
                               }
                             </p>
+                          )}
+
+                          {isOwnProfile && (
+                            <DeletePortfolioButton
+                              itemId={item.id}
+                              storagePath={item.storage_path}
+                              title={item.title}
+                            />
                           )}
 
                         </div>
