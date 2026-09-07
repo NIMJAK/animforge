@@ -841,7 +841,15 @@ export default function ProjectAssetsPage() {
 
                     </div>
 
-                  </article>
+                  
+                    <a
+                      href={`/projects/${slug}/assets/characters/${character.id}`}
+                      className="mt-6 flex w-full items-center justify-center rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.07] px-5 py-3 text-sm font-semibold text-fuchsia-300 transition hover:bg-fuchsia-500/15"
+                    >
+                      Open Character Profile
+                    </a>
+
+</article>
                 )
               )
             )}

@@ -69,6 +69,28 @@ type Project = {
   status: string;
 };
 
+type SavedCharacter = {
+  id: string;
+  name: string;
+  role: string | null;
+  age_profile: string | null;
+  personality: string | null;
+  goal: string | null;
+  flaw: string | null;
+  visual_direction: string | null;
+  relationship: string | null;
+  design_notes: string | null;
+  raw_content: string;
+};
+
+type SavedStoryDraft = {
+  id: string;
+  title: string;
+  draft_type: string;
+  content: string;
+  created_at: string;
+};
+
 export default function ProjectAIPage() {
   const router = useRouter();
 
@@ -99,6 +121,16 @@ export default function ProjectAIPage() {
     loadingProject,
     setLoadingProject,
   ] = useState(true);
+
+  const [
+    savedCharacters,
+    setSavedCharacters,
+  ] = useState<SavedCharacter[]>([]);
+
+  const [
+    recentStories,
+    setRecentStories,
+  ] = useState<SavedStoryDraft[]>([]);
 
   const [toolMode, setToolMode] =
     useState<ToolMode>("story");
@@ -260,6 +292,73 @@ export default function ProjectAIPage() {
       setProject(
         data as Project
       );
+
+      const [
+        charactersResult,
+        storiesResult,
+      ] = await Promise.all([
+        supabase
+          .from("project_characters")
+          .select(`
+            id,
+            name,
+            role,
+            age_profile,
+            personality,
+            goal,
+            flaw,
+            visual_direction,
+            relationship,
+            design_notes,
+            raw_content
+          `)
+          .eq(
+            "project_id",
+            data.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: true,
+            }
+          )
+          .limit(12),
+
+        supabase
+          .from("project_story_drafts")
+          .select(`
+            id,
+            title,
+            draft_type,
+            content,
+            created_at
+          `)
+          .eq(
+            "project_id",
+            data.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false,
+            }
+          )
+          .limit(3),
+      ]);
+
+      if (!charactersResult.error) {
+        setSavedCharacters(
+          (charactersResult.data ||
+            []) as SavedCharacter[]
+        );
+      }
+
+      if (!storiesResult.error) {
+        setRecentStories(
+          (storiesResult.data ||
+            []) as SavedStoryDraft[]
+        );
+      }
 
       setLoadingProject(
         false
@@ -432,11 +531,97 @@ export default function ProjectAIPage() {
         "No existing blueprint."
       ).slice(
         0,
-        7000
+        5500
       );
 
+    const characterBible =
+      savedCharacters.length
+        ? savedCharacters
+            .map(
+              (
+                character,
+                index
+              ) => {
+                const detailed =
+                  character.raw_content
+                    ?.slice(
+                      0,
+                      900
+                    ) ||
+                  "";
+
+                return `
+CHARACTER ${index + 1}
+
+Name:
+${character.name}
+
+Role:
+${character.role || "Not specified"}
+
+Age / Profile:
+${character.age_profile || "Not specified"}
+
+Personality:
+${character.personality || "Not specified"}
+
+Goal:
+${character.goal || "Not specified"}
+
+Flaw:
+${character.flaw || "Not specified"}
+
+Relationships:
+${character.relationship || "Not specified"}
+
+Visual Direction:
+${character.visual_direction || "Not specified"}
+
+Design Notes:
+${character.design_notes || "Not specified"}
+
+Additional Character Material:
+${detailed}
+`;
+              }
+            )
+            .join("\n")
+        : "No saved characters yet.";
+
+    const storyContinuity =
+      recentStories.length
+        ? recentStories
+            .slice()
+            .reverse()
+            .map(
+              (
+                story,
+                index
+              ) => `
+RECENT STORY MATERIAL ${index + 1}
+
+Title:
+${story.title}
+
+Type:
+${story.draft_type}
+
+Content:
+${story.content.slice(
+  0,
+  1600
+)}
+`
+            )
+            .join("\n")
+        : "No saved story drafts yet.";
+
     return `
-PROJECT TITLE:
+==================================================
+PROJECT
+==================================================
+
+TITLE:
 ${project.title}
 
 GENRE:
@@ -448,8 +633,50 @@ ${project.animation_style || "Not specified"}
 TARGET AUDIENCE:
 ${project.target_audience || "Not specified"}
 
-EXISTING PROJECT MATERIAL:
+PROJECT BLUEPRINT:
 ${blueprint}
+
+
+==================================================
+SAVED CHARACTER BIBLE
+==================================================
+
+${characterBible}
+
+
+==================================================
+RECENT STORY CONTINUITY
+==================================================
+
+${storyContinuity}
+
+
+==================================================
+CONTINUITY RULES
+==================================================
+
+1. Treat saved character information as established canon.
+
+2. Do not randomly change a character's personality,
+goal, flaw, relationship, age or established history.
+
+3. Characters may grow or change only when the story
+provides a believable reason.
+
+4. Respect events established in recent saved story drafts.
+
+5. Do not resurrect, remove, relocate or fundamentally
+change characters without story justification.
+
+6. Keep relationships consistent unless the requested
+scene intentionally develops that relationship.
+
+7. If the creator's new request conflicts with established
+material, follow the creator's explicit request but make the
+change feel intentional.
+
+8. Avoid inventing unnecessary new characters when an
+existing saved character can naturally serve the story.
 `;
   }
 
