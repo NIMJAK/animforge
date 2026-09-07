@@ -372,6 +372,17 @@ export default async function ProjectPage({
 
                     Team Chat
                   </a>
+
+                  <a
+                    href={`/projects/${project.slug}/ai`}
+                    className="flex items-center gap-2 rounded-2xl border border-fuchsia-500/25 bg-fuchsia-500/10 px-5 py-3 text-sm font-medium text-fuchsia-300 transition hover:bg-fuchsia-500/20"
+                  >
+                    <Sparkles
+                      size={16}
+                    />
+
+                    AI Workspace
+                  </a>
                 </>
               )}
 
