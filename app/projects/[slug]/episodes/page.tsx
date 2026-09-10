@@ -156,149 +156,149 @@ export default function EpisodesPage() {
     >({});
 
   useEffect(() => {
-    void loadWorkspace();
-  }, [slug]);
+    async function loadWorkspace() {
+      setLoading(true);
+      setError("");
 
-  async function loadWorkspace() {
-    setLoading(true);
-    setError("");
+      const supabase =
+        createClient();
 
-    const supabase =
-      createClient();
+      const {
+        data: { user },
+      } =
+        await supabase.auth.getUser();
 
-    const {
-      data: { user },
-    } =
-      await supabase.auth.getUser();
-
-    if (!user) {
-      router.push(
-        "/auth/login"
-      );
-      return;
-    }
-
-    setUserId(
-      user.id
-    );
-
-    const {
-      data: projectData,
-      error: projectError,
-    } =
-      await supabase
-        .from("projects")
-        .select(
-          "id, title"
-        )
-        .eq(
-          "slug",
-          slug
-        )
-        .maybeSingle();
-
-    if (
-      projectError ||
-      !projectData
-    ) {
-      setError(
-        "Project not found or you do not have access."
-      );
-      setLoading(false);
-      return;
-    }
-
-    setProject(
-      projectData
-    );
-
-    const [
-      episodeResult,
-      sceneResult,
-    ] =
-      await Promise.all([
-        supabase
-          .from(
-            "project_episodes"
-          )
-          .select("*")
-          .eq(
-            "project_id",
-            projectData.id
-          )
-          .order(
-            "episode_number",
-            {
-              ascending: true,
-            }
-          ),
-
-        supabase
-          .from(
-            "project_scenes"
-          )
-          .select("*")
-          .eq(
-            "project_id",
-            projectData.id
-          )
-          .order(
-            "scene_number",
-            {
-              ascending: true,
-            }
-          ),
-      ]);
-
-    if (
-      episodeResult.error
-    ) {
-      setError(
-        episodeResult.error.message
-      );
-    }
-
-    if (
-      sceneResult.error
-    ) {
-      setError(
-        sceneResult.error.message
-      );
-    }
-
-    const loadedEpisodes =
-      (episodeResult.data ||
-        []) as Episode[];
-
-    setEpisodes(
-      loadedEpisodes
-    );
-
-    setScenes(
-      (sceneResult.data ||
-        []) as Scene[]
-    );
-
-    const expanded:
-      Record<
-        string,
-        boolean
-      > = {};
-
-    loadedEpisodes.forEach(
-      (episode) => {
-        expanded[
-          episode.id
-        ] = true;
+      if (!user) {
+        router.push(
+          "/auth/login"
+        );
+        return;
       }
-    );
 
-    setExpandedEpisodes(
-      expanded
-    );
+      setUserId(
+        user.id
+      );
 
-    setLoading(false);
-  }
+      const {
+        data: projectData,
+        error: projectError,
+      } =
+        await supabase
+          .from("projects")
+          .select(
+            "id, title"
+          )
+          .eq(
+            "slug",
+            slug
+          )
+          .maybeSingle();
+
+      if (
+        projectError ||
+        !projectData
+      ) {
+        setError(
+          "Project not found or you do not have access."
+        );
+        setLoading(false);
+        return;
+      }
+
+      setProject(
+        projectData
+      );
+
+      const [
+        episodeResult,
+        sceneResult,
+      ] =
+        await Promise.all([
+          supabase
+            .from(
+              "project_episodes"
+            )
+            .select("*")
+            .eq(
+              "project_id",
+              projectData.id
+            )
+            .order(
+              "episode_number",
+              {
+                ascending: true,
+              }
+            ),
+
+          supabase
+            .from(
+              "project_scenes"
+            )
+            .select("*")
+            .eq(
+              "project_id",
+              projectData.id
+            )
+            .order(
+              "scene_number",
+              {
+                ascending: true,
+              }
+            ),
+        ]);
+
+      if (
+        episodeResult.error
+      ) {
+        setError(
+          episodeResult.error.message
+        );
+      }
+
+      if (
+        sceneResult.error
+      ) {
+        setError(
+          sceneResult.error.message
+        );
+      }
+
+      const loadedEpisodes =
+        (episodeResult.data ||
+          []) as Episode[];
+
+      setEpisodes(
+        loadedEpisodes
+      );
+
+      setScenes(
+        (sceneResult.data ||
+          []) as Scene[]
+      );
+
+      const expanded:
+        Record<
+          string,
+          boolean
+        > = {};
+
+      loadedEpisodes.forEach(
+        (episode) => {
+          expanded[
+            episode.id
+          ] = true;
+        }
+      );
+
+      setExpandedEpisodes(
+        expanded
+      );
+
+      setLoading(false);
+    }
+
+    void loadWorkspace();
+  }, [slug, router]);
 
   function getScenes(
     episodeId: string

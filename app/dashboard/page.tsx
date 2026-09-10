@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -522,7 +524,7 @@ export default function DashboardPage() {
 
               <div className="mt-8 flex flex-wrap gap-3">
 
-                <a
+                <Link
                   href="/projects/new"
                   className="group flex items-center gap-2 rounded-2xl bg-white px-5 py-3 font-semibold text-black transition hover:scale-[1.02]"
                 >
@@ -534,7 +536,7 @@ export default function DashboardPage() {
                     size={16}
                     className="transition group-hover:translate-x-1"
                   />
-                </a>
+                </Link>
 
                 <a
                   href="/discover"
@@ -666,12 +668,12 @@ export default function DashboardPage() {
               title="Projects You're Building"
               description="Your original animation worlds."
               action={
-                <a
+                <Link
                   href="/projects/new"
                   className="text-sm font-medium text-violet-400 hover:text-violet-300"
                 >
                   New project →
-                </a>
+                </Link>
               }
             >
 
@@ -930,7 +932,7 @@ export default function DashboardPage() {
                   <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
 
                     <p className="text-sm text-zinc-500">
-                      You haven't applied to
+                      You haven&apos;t applied to
                       any projects yet.
                     </p>
 

@@ -80,71 +80,71 @@ export default function DeleteProjectPage() {
     useState("");
 
   useEffect(() => {
+    async function loadProject() {
+      const supabase =
+        createClient();
+
+      const {
+        data: { user },
+      } =
+        await supabase.auth.getUser();
+
+      if (!user) {
+        router.push(
+          "/auth/login"
+        );
+        return;
+      }
+
+      const {
+        data,
+        error:
+          projectError,
+      } =
+        await supabase
+          .from("projects")
+          .select(
+            "id, owner_id, title, slug"
+          )
+          .eq(
+            "slug",
+            slug
+          )
+          .maybeSingle();
+
+      if (
+        projectError ||
+        !data
+      ) {
+        setError(
+          "Project not found."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      if (
+        data.owner_id !==
+        user.id
+      ) {
+        setError(
+          "Only the project owner can delete this project."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      setProject(
+        data as Project
+      );
+
+      setLoading(false);
+    }
+
     void loadProject();
-  }, [slug]);
-
-  async function loadProject() {
-    const supabase =
-      createClient();
-
-    const {
-      data: { user },
-    } =
-      await supabase.auth.getUser();
-
-    if (!user) {
-      router.push(
-        "/auth/login"
-      );
-      return;
-    }
-
-    const {
-      data,
-      error:
-        projectError,
-    } =
-      await supabase
-        .from("projects")
-        .select(
-          "id, owner_id, title, slug"
-        )
-        .eq(
-          "slug",
-          slug
-        )
-        .maybeSingle();
-
-    if (
-      projectError ||
-      !data
-    ) {
-      setError(
-        "Project not found."
-      );
-
-      setLoading(false);
-      return;
-    }
-
-    if (
-      data.owner_id !==
-      user.id
-    ) {
-      setError(
-        "Only the project owner can delete this project."
-      );
-
-      setLoading(false);
-      return;
-    }
-
-    setProject(
-      data as Project
-    );
-
-    setLoading(false);
-  }
+  }, [slug, router]);
 
   async function deleteProject() {
     if (

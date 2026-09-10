@@ -15,11 +15,11 @@ behavior; those require a separate test environment.
 
 After merging this workflow and seeing it run, repository rules can require
 the `lint` and `build` checks before merging. Adding the file alone does not
-enforce merge protection. Existing lint errors will fail the lint check until fixed.
+enforce merge protection. Lint errors fail the lint check; non-blocking warnings remain visible.
 
 ## Next stages
 
-1. Resolve the existing lint findings in focused changes and add meaningful tests
+1. Address the remaining lint warnings in focused changes and add meaningful tests
    for sign-up, project ownership and other critical behavior.
 2. Connect error reports and feature requests to a reviewed task queue. An AI
    coding runner can implement selected tasks in branches and open pull requests.

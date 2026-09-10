@@ -341,7 +341,7 @@ export default function AddPortfolioWorkPage() {
 
             <p className="mt-3 leading-7 text-zinc-500">
               Upload your strongest work rather
-              than everything you've made. A few
+              than everything you&apos;ve made. A few
               great pieces can communicate your
               style better than dozens of random
               images.
@@ -362,7 +362,7 @@ export default function AddPortfolioWorkPage() {
           </p>
 
           <h2 className="mt-3 text-3xl font-black">
-            Showcase something you've made.
+            Showcase something you&apos;ve made.
           </h2>
 
           <p className="mt-3 text-zinc-500">

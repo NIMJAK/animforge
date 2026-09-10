@@ -1,5 +1,7 @@
 "use client";
 
+import type { MLCEngineInterface } from "@mlc-ai/web-llm";
+
 import {
   ArrowLeft,
   BrainCircuit,
@@ -47,7 +49,7 @@ export default function AIStudioPage() {
   const router = useRouter();
 
   const engineRef =
-    useRef<any>(null);
+    useRef<MLCEngineInterface | null>(null);
 
   const [idea, setIdea] =
     useState("");
@@ -130,7 +132,9 @@ export default function AIStudioPage() {
     }
 
     const gpu =
-      (navigator as any).gpu;
+      (navigator as Navigator & {
+        gpu: { requestAdapter(): Promise<object | null> };
+      }).gpu;
 
     setStatus(
       "Checking GPU..."
@@ -156,7 +160,7 @@ export default function AIStudioPage() {
 
     const exists =
       webllm.prebuiltAppConfig.model_list.some(
-        (model: any) =>
+        (model) =>
           model.model_id ===
           MODEL_ID
       );
@@ -174,7 +178,7 @@ export default function AIStudioPage() {
         MODEL_ID,
         {
           initProgressCallback:
-            (report: any) => {
+            (report) => {
               const percentage =
                 Math.round(
                   (
