@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   ArrowLeft,
 } from "lucide-react";
@@ -61,7 +63,7 @@ export default function PrivacyPage() {
         public may be visible to other users. Private
         project content is intended to be available
         only to authorized project participants,
-        subject to the platform's access controls.
+        subject to the platform&apos;s access controls.
       </p>
 
       <h2>6. Uploaded files</h2>
@@ -136,13 +138,13 @@ function PolicyPage({
 
           <AnimForgeLogo />
 
-          <a
+          <Link
             href="/"
             className="flex items-center gap-2 text-sm text-zinc-400"
           >
             <ArrowLeft size={16} />
             Home
-          </a>
+          </Link>
 
         </div>
 

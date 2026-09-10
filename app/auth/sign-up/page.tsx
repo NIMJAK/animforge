@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -77,12 +79,12 @@ export default function SignUpPage() {
 
         <AnimForgeLogo />
 
-        <a
+        <Link
           href="/"
           className="text-sm text-zinc-500 transition hover:text-white"
         >
           Back home
-        </a>
+        </Link>
 
       </nav>
 

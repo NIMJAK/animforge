@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -91,13 +93,13 @@ export default function ProjectsPage() {
               Discover
             </a>
 
-            <a
+            <Link
               href="/projects/new"
               className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]"
             >
               <Plus size={16} />
               Create
-            </a>
+            </Link>
           </div>
         </div>
       </nav>
@@ -134,7 +136,7 @@ export default function ProjectsPage() {
             </div>
 
             <div className="flex lg:justify-end">
-              <a
+              <Link
                 href="/projects/new"
                 className="group flex items-center gap-2 rounded-2xl bg-white px-6 py-3.5 font-semibold text-black transition hover:scale-[1.02]"
               >
@@ -145,7 +147,7 @@ export default function ProjectsPage() {
                   size={16}
                   className="transition group-hover:translate-x-1"
                 />
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -215,13 +217,13 @@ export default function ProjectsPage() {
               animation project.
             </p>
 
-            <a
+            <Link
               href="/projects/new"
               className="mt-7 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-medium transition hover:bg-violet-500"
             >
               <Plus size={16} />
               Create Project
-            </a>
+            </Link>
           </div>
         )}
       </section>

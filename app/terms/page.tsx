@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   ArrowLeft,
 } from "lucide-react";
@@ -19,13 +21,13 @@ export default function TermsPage() {
 
           <AnimForgeLogo />
 
-          <a
+          <Link
             href="/"
             className="flex items-center gap-2 text-sm text-zinc-400"
           >
             <ArrowLeft size={16} />
             Home
-          </a>
+          </Link>
 
         </div>
 

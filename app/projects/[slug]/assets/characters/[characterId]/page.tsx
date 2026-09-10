@@ -120,151 +120,148 @@ export default function CharacterProfilePage() {
     useState("");
 
   useEffect(() => {
-    void loadCharacter();
-  }, [
-    slug,
-    characterId,
-  ]);
+    async function loadCharacter() {
+      setLoading(true);
+      setError("");
 
-  async function loadCharacter() {
-    setLoading(true);
-    setError("");
+      const supabase =
+        createClient();
 
-    const supabase =
-      createClient();
-
-    const {
-      data: { user },
-    } =
-      await supabase.auth.getUser();
-
-    if (!user) {
-      router.push(
-        "/auth/login"
-      );
-
-      return;
-    }
-
-    setUserId(
-      user.id
-    );
-
-    const {
-      data: projectData,
-      error: projectError,
-    } =
-      await supabase
-        .from("projects")
-        .select(
-          "id, title"
-        )
-        .eq(
-          "slug",
-          slug
-        )
-        .maybeSingle();
-
-    if (
-      projectError ||
-      !projectData
-    ) {
-      setError(
-        "Project not found or you do not have access."
-      );
-
-      setLoading(false);
-
-      return;
-    }
-
-    setProject(
-      projectData
-    );
-
-    const {
-      data:
-        characterData,
-      error:
-        characterError,
-    } =
-      await supabase
-        .from(
-          "project_characters"
-        )
-        .select(`
-          id,
-          project_id,
-          created_by,
-          name,
-          role,
-          age_profile,
-          personality,
-          goal,
-          flaw,
-          visual_direction,
-          relationship,
-          design_notes,
-          reference_storage_path,
-          raw_content,
-          created_at,
-          updated_at
-        `)
-        .eq(
-          "id",
-          characterId
-        )
-        .eq(
-          "project_id",
-          projectData.id
-        )
-        .maybeSingle();
-
-    if (
-      characterError ||
-      !characterData
-    ) {
-      setError(
-        "Character not found or you do not have access."
-      );
-
-      setLoading(false);
-
-      return;
-    }
-
-    const row =
-      characterData as Character;
-
-    setCharacter(row);
-
-    if (
-      row.reference_storage_path
-    ) {
       const {
-        data:
-          signedData,
+        data: { user },
       } =
-        await supabase.storage
-          .from(
-            "character-references"
+        await supabase.auth.getUser();
+
+      if (!user) {
+        router.push(
+          "/auth/login"
+        );
+
+        return;
+      }
+
+      setUserId(
+        user.id
+      );
+
+      const {
+        data: projectData,
+        error: projectError,
+      } =
+        await supabase
+          .from("projects")
+          .select(
+            "id, title"
           )
-          .createSignedUrl(
-            row.reference_storage_path,
-            3600
-          );
+          .eq(
+            "slug",
+            slug
+          )
+          .maybeSingle();
 
       if (
-        signedData?.signedUrl
+        projectError ||
+        !projectData
       ) {
-        setImageUrl(
-          signedData.signedUrl
+        setError(
+          "Project not found or you do not have access."
         );
+
+        setLoading(false);
+
+        return;
       }
+
+      setProject(
+        projectData
+      );
+
+      const {
+        data:
+          characterData,
+        error:
+          characterError,
+      } =
+        await supabase
+          .from(
+            "project_characters"
+          )
+          .select(`
+            id,
+            project_id,
+            created_by,
+            name,
+            role,
+            age_profile,
+            personality,
+            goal,
+            flaw,
+            visual_direction,
+            relationship,
+            design_notes,
+            reference_storage_path,
+            raw_content,
+            created_at,
+            updated_at
+          `)
+          .eq(
+            "id",
+            characterId
+          )
+          .eq(
+            "project_id",
+            projectData.id
+          )
+          .maybeSingle();
+
+      if (
+        characterError ||
+        !characterData
+      ) {
+        setError(
+          "Character not found or you do not have access."
+        );
+
+        setLoading(false);
+
+        return;
+      }
+
+      const row =
+        characterData as Character;
+
+      setCharacter(row);
+
+      if (
+        row.reference_storage_path
+      ) {
+        const {
+          data:
+            signedData,
+        } =
+          await supabase.storage
+            .from(
+              "character-references"
+            )
+            .createSignedUrl(
+              row.reference_storage_path,
+              3600
+            );
+
+        if (
+          signedData?.signedUrl
+        ) {
+          setImageUrl(
+            signedData.signedUrl
+          );
+        }
+      }
+
+      setLoading(false);
     }
 
-    setLoading(false);
-  }
+    void loadCharacter();
+  }, [slug, characterId, router]);
 
   function updateField<
     K extends keyof Character

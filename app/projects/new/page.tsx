@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -119,13 +121,13 @@ export default function CreateProjectPage() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
           <AnimForgeLogo />
 
-          <a
+          <Link
             href="/projects"
             className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/[0.05] hover:text-white"
           >
             <ArrowLeft size={16} />
             Projects
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -209,7 +211,7 @@ export default function CreateProjectPage() {
           </h2>
 
           <p className="mt-3 text-zinc-500">
-            Don't worry about making everything
+            Don&apos;t worry about making everything
             perfect. You can grow the project with
             your team.
           </p>
@@ -400,12 +402,12 @@ export default function CreateProjectPage() {
 
           <div className="mt-9 flex flex-col-reverse gap-3 border-t border-white/[0.07] pt-7 sm:flex-row sm:items-center sm:justify-between">
 
-            <a
+            <Link
               href="/projects"
               className="text-center text-sm text-zinc-500 transition hover:text-white"
             >
               Cancel
-            </a>
+            </Link>
 
             <button
               type="submit"

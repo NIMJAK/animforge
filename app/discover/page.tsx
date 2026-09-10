@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   BriefcaseBusiness,
   Compass,
@@ -325,12 +327,12 @@ export default function DiscoverPage() {
               Dashboard
             </a>
 
-            <a
+            <Link
               href="/projects"
               className="hidden rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/[0.05] hover:text-white sm:block"
             >
               Projects
-            </a>
+            </Link>
 
           </div>
 

@@ -986,7 +986,7 @@ export default function ApplicationsPage() {
                 When creators apply
                 to one of your open
                 collaboration roles,
-                they'll appear here.
+                they&apos;ll appear here.
               </p>
 
               <a

@@ -1,5 +1,7 @@
 "use client";
 
+import type { MLCEngineInterface } from "@mlc-ai/web-llm";
+
 import {
   ArrowLeft,
   BookOpen,
@@ -105,7 +107,7 @@ export default function ProjectAIPage() {
     );
 
   const engineRef =
-    useRef<any>(null);
+    useRef<MLCEngineInterface | null>(null);
 
   const loadedModelRef =
     useRef<string | null>(
@@ -407,7 +409,9 @@ export default function ProjectAIPage() {
     }
 
     const gpu =
-      (navigator as any).gpu;
+      (navigator as Navigator & {
+        gpu: { requestAdapter(): Promise<object | null> };
+      }).gpu;
 
     setStatus(
       "Checking GPU..."
@@ -429,7 +433,7 @@ export default function ProjectAIPage() {
 
     const exists =
       webllm.prebuiltAppConfig.model_list.some(
-        (item: any) =>
+        (item) =>
           item.model_id ===
           modelId
       );
@@ -472,7 +476,7 @@ export default function ProjectAIPage() {
         modelId,
         {
           initProgressCallback:
-            (report: any) => {
+            (report) => {
               const percentage =
                 Math.round(
                   (
@@ -1866,7 +1870,26 @@ function StoryControls({
 }
 
 function CharacterControls(
-  props: any
+  props: {
+    characterName: string;
+    setCharacterName: (value: string) => void;
+    characterRole: string;
+    setCharacterRole: (value: string) => void;
+    characterAge: string;
+    setCharacterAge: (value: string) => void;
+    personality: string;
+    setPersonality: (value: string) => void;
+    characterGoal: string;
+    setCharacterGoal: (value: string) => void;
+    characterFlaw: string;
+    setCharacterFlaw: (value: string) => void;
+    visualDirection: string;
+    setVisualDirection: (value: string) => void;
+    relationship: string;
+    setRelationship: (value: string) => void;
+    instruction: string;
+    setInstruction: (value: string) => void;
+  }
 ) {
   return (
     <>

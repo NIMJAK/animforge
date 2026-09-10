@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -83,13 +85,13 @@ export default async function ProjectPage({
             or you may not have access to it.
           </p>
 
-          <a
+          <Link
             href="/projects"
             className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-black"
           >
             <ArrowLeft size={16} />
             Browse Projects
-          </a>
+          </Link>
         </div>
       </main>
     );
@@ -281,13 +283,13 @@ export default async function ProjectPage({
       </nav>
 
       <section className="relative z-10 mx-auto max-w-[1450px] px-6 pb-24 pt-10">
-        <a
+        <Link
           href="/projects"
           className="inline-flex items-center gap-2 text-sm text-zinc-500 transition hover:text-white"
         >
           <ArrowLeft size={16} />
           All Projects
-        </a>
+        </Link>
 
         {/* HERO */}
         <div className="relative mt-7 overflow-hidden rounded-[40px] border border-white/10 bg-white/[0.04] backdrop-blur-xl">

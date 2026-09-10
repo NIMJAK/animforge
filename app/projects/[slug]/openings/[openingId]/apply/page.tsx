@@ -471,7 +471,7 @@ export default function ApplyPage() {
               </h2>
 
               <p className="mx-auto mt-4 max-w-lg leading-7 text-zinc-500">
-                Project owners can't apply to
+                Project owners can&apos;t apply to
                 their own collaboration openings.
               </p>
 
@@ -497,7 +497,7 @@ export default function ApplyPage() {
               </h2>
 
               <p className="mx-auto mt-4 max-w-lg leading-7 text-zinc-500">
-                You've already applied for this
+                You&apos;ve already applied for this
                 role. The project creator can
                 review your profile, portfolio
                 and application.
@@ -527,7 +527,7 @@ export default function ApplyPage() {
               </p>
 
               <h2 className="mt-3 text-3xl font-black">
-                Tell them why you're a fit.
+                Tell them why you&apos;re a fit.
               </h2>
 
               <p className="mt-3 max-w-xl leading-7 text-zinc-500">

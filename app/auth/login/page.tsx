@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -79,12 +81,12 @@ export default function LoginPage() {
       <nav className="relative z-20 mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6">
         <AnimForgeLogo />
 
-        <a
+        <Link
           href="/"
           className="text-sm text-zinc-500 transition hover:text-white"
         >
           Back home
-        </a>
+        </Link>
       </nav>
 
       <section className="relative z-10 mx-auto grid min-h-[calc(100vh-90px)] max-w-[1400px] gap-12 px-6 pb-16 pt-8 lg:grid-cols-2 lg:items-center">
