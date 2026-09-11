@@ -76,7 +76,6 @@ export default function DashboardPage() {
     useState<Record<string, Project>>({});
 
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function loadDashboard() {
@@ -649,12 +648,6 @@ export default function DashboardPage() {
           />
 
         </section>
-
-        {message && (
-          <div className="mt-7 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
-            {message}
-          </div>
-        )}
 
         {/* MAIN GRID */}
         <section className="mt-12 grid gap-8 xl:grid-cols-[1.45fr_.75fr]">

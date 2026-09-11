@@ -11,7 +11,6 @@ import {
   Pencil,
   Sparkles,
   Users,
-  UserRound,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";

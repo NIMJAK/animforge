@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 import {
-  type ReactNode,
   useRef,
   useState,
 } from "react";
@@ -1175,16 +1174,4 @@ function createSlug(
     "ai-project";
 
   return `${base}-${Date.now().toString(36)}`;
-}
-
-function FeatureBadge({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return (
-    <span>
-      {children}
-    </span>
-  );
 }
